@@ -1,0 +1,10 @@
+[build-system]
+requires = [
+    "argparse",
+    "dataclasses",
+    "os",
+    "requests",
+    "sys",
+    "subprocess",
+    "simple-term-menu"
+]
