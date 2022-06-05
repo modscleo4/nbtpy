@@ -15,12 +15,11 @@
 # limitations under the License.
 
 
-from email.errors import BoundaryError
 from functools import reduce
 from struct import pack
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.NBTTag import NBTTag
-from lib.nbt.NBTTagType import NBTTagType
+
+from lib.nbt import NBTNamedTag
+from lib.nbt import NBTTagType
 
 
 class NBTTagList(NBTNamedTag):
@@ -37,20 +36,17 @@ class NBTTagList(NBTNamedTag):
 
         return "[\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join(content) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "]"
 
-
     def payloadAsBinary(self) -> bytes:
         listType = self.getAdditionalMetadata()['listType']
 
         return pack('>B', listType.value) + pack('>l', len(self.getPayload())) + reduce(lambda acc, bin: acc + bin, map(lambda value: value.payloadAsBinary(), self.getPayload()), b'')
 
-
     def getPayloadSize(self) -> int:
 
         return 1 + 4 + reduce(lambda carry, item:
-            # List elements don't have neither type nor name
-            carry + item.getPayloadSize(),
-        self.getPayload(), 0)
-
+                              # List elements don't have neither type nor name
+                              carry + item.getPayloadSize(),
+                              self.getPayload(), 0)
 
     def get(self, index: int) -> NBTNamedTag:
         payload = self.getPayload()
@@ -58,7 +54,6 @@ class NBTTagList(NBTNamedTag):
             raise IndexError('Index out of bounds')
 
         return payload[index]
-
 
     def set(self, index: int, value: NBTNamedTag) -> None:
         payload = self.getPayload()

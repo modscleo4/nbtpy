@@ -16,8 +16,8 @@
 
 
 from struct import pack
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.NBTTagType import NBTTagType
+
+from lib.nbt import NBTNamedTag, NBTTagType
 
 
 class NBTTagFloat(NBTNamedTag):
@@ -26,10 +26,8 @@ class NBTTagFloat(NBTNamedTag):
     def getPayload(self) -> float:
         return super().getPayload()
 
-
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         return f"{self.getPayload()}f"
-
 
     def payloadAsBinary(self) -> bytes:
         return pack('>f', self.getPayload())

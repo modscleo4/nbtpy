@@ -17,11 +17,11 @@
 
 from argparse import ArgumentError
 from functools import reduce
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.NBTTagType import NBTTagType
-from lib.nbt.tag.NBTTagEnd import NBTTagEnd
-from lib.util import NBTException
 import re
+
+from lib.nbt import NBTNamedTag, NBTTagType
+from lib.nbt.tag import NBTTagEnd
+from lib.util import NBTException
 
 
 class NBTTagCompound(NBTNamedTag):
@@ -30,7 +30,6 @@ class NBTTagCompound(NBTNamedTag):
     def getPayload(self) -> dict[str, NBTNamedTag]:
         return super().getPayload()
 
-
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         payload = self.getPayload()
         content = map(lambda name: ('"' + payload[name].getName() + '"' if re.search(r'[ :]', payload[name].getName()) else payload[name].getName()) + ':' + (' ' if format else '') + payload[name].toSNBT(format, iteration + 1), payload)
@@ -38,24 +37,19 @@ class NBTTagCompound(NBTNamedTag):
         if not format:
             return '{' + ','.join(content) + '}'
 
-
         return "{\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join(content) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "}"
-
 
     def payloadAsBinary(self) -> bytes:
         payload = self.getPayload()
         return reduce(lambda acc, tagBytes: acc + tagBytes, map(lambda name: payload[name].toBinary(), payload), b'') + NBTTagEnd().toBinary()
 
-
     def getPayloadSize(self) -> int:
         payload = self.getPayload()
         return reduce(lambda carry, name: carry + payload[name].getByteLength(), self.getPayload(), NBTTagEnd().getByteLength())
 
-
     def keys(self) -> list:
         payload = self.getPayload()
         return map(lambda name: {"name": payload[name].getName(), "type": payload[name].getType().asString()}, payload)
-
 
     def get(self, name: str) -> NBTNamedTag:
         if not name:
@@ -69,7 +63,6 @@ class NBTTagCompound(NBTNamedTag):
             return tag
 
         raise NBTException(f"Tag not found: {name}")
-
 
     def set(self, name: str, value: NBTNamedTag):
         if not name:

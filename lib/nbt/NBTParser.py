@@ -17,22 +17,9 @@
 
 import re
 from struct import unpack
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.NBTTag import NBTTag
-from lib.nbt.NBTTagType import NBTTagType
-from lib.nbt.tag.NBTTagByte import NBTTagByte
-from lib.nbt.tag.NBTTagByteArray import NBTTagByteArray
-from lib.nbt.tag.NBTTagCompound import NBTTagCompound
-from lib.nbt.tag.NBTTagDouble import NBTTagDouble
-from lib.nbt.tag.NBTTagEnd import NBTTagEnd
-from lib.nbt.tag.NBTTagFloat import NBTTagFloat
-from lib.nbt.tag.NBTTagInt import NBTTagInt
-from lib.nbt.tag.NBTTagIntArray import NBTTagIntArray
-from lib.nbt.tag.NBTTagList import NBTTagList
-from lib.nbt.tag.NBTTagLong import NBTTagLong
-from lib.nbt.tag.NBTTagLongArray import NBTTagLongArray
-from lib.nbt.tag.NBTTagShort import NBTTagShort
-from lib.nbt.tag.NBTTagString import NBTTagString
+
+from lib.nbt import NBTNamedTag, NBTTag, NBTTagType
+from lib.nbt.tag import NBTTagByte, NBTTagByteArray, NBTTagCompound, NBTTagDouble, NBTTagEnd, NBTTagFloat, NBTTagInt, NBTTagIntArray, NBTTagList, NBTTagLong, NBTTagLongArray, NBTTagShort, NBTTagString
 from lib.settings import settings
 
 
@@ -44,7 +31,6 @@ class NBTParser:
         if tag == NBTTagType.TAG_End:
             return NBTTagEnd()
 
-
         nameLength = unpack('>H', nbtData[1:3])[0]
         name = nbtData[3:3 + nameLength].decode('utf-8')
         data = nbtData[3 + nameLength:]
@@ -52,15 +38,12 @@ class NBTParser:
         if settings.debug:
             print('> '.ljust(2 + iteration * 2, ' ') + f"Parsing tag [{tag}]" + (f" [name={name}]" if name else '') + "...")
 
-
         nbtTag = NBTParser.parseTag(tag, name, data, iteration)
 
         if settings.debug:
             print(('> '.ljust(2 + iteration * 2, ' ') + f"[{tag}] " + f"[name={name}] " if name else '') + "Done.")
 
-
         return nbtTag
-
 
     @staticmethod
     def parseTag(tag: NBTTagType, name: str, data: bytes, iteration: int = 0) -> NBTTag:
@@ -177,7 +160,6 @@ class NBTParser:
 
         return NBTParser.parseSNBTTag(snbtStr)
 
-
     @staticmethod
     def parseSNBTTag(data: str, name: str = '', iteration: int = 0, forceType: NBTTagType = None) -> NBTNamedTag:
         '''
@@ -220,24 +202,19 @@ class NBTParser:
                             case 'L':
                                 _tag = NBTTagType.TAG_Long
 
-
                         j += 2
-
 
                     k = j
                     while data[k] != ']':
                         while (data[k] == ' ' or data[k] == "\t" or data[k] == "\n" or data[k] == "\r"):
                             k += 1
 
-
                         if data[k] == ']':
                             break
-
 
                         if data[k] == ',':
                             k += 1
                             continue
-
 
                         tag = NBTParser.parseSNBTTag(data[k:], '', iteration + 1, _tag)
                         k += tag.getAdditionalMetadata()['byteLength']
@@ -258,7 +235,7 @@ class NBTParser:
                     return NBTTagList(name, payload, {'listType': payload[0].getType() if len(payload) > 0 else NBTTagType.TAG_End, 'byteLength': k - i + 2})
 
                 case '{':
-                    payload = []
+                    payload = {}
 
                     j = i + 1
                     while (data[j] != '}'):

@@ -35,7 +35,7 @@ class NBTTagType(Enum):
 
     def size(self) -> int:
         if self == NBTTagType.TAG_End:
-                return 0
+            return 0
         elif self == NBTTagType.TAG_Byte:
             return 1
         elif self == NBTTagType.TAG_Short:

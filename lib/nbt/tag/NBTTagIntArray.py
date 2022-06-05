@@ -17,9 +17,9 @@
 
 from functools import reduce
 from struct import pack
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.NBTTagType import NBTTagType
-from lib.nbt.tag.NBTTagInt import NBTTagInt
+
+from lib.nbt import NBTNamedTag, NBTTagType
+from lib.nbt.tag import NBTTagInt
 
 
 class NBTTagIntArray(NBTNamedTag):
@@ -28,21 +28,17 @@ class NBTTagIntArray(NBTNamedTag):
     def getPayload(self) -> list[NBTTagInt]:
         return super().getPayload()
 
-
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         if not format:
             return '[I;' + ','.join(map(lambda value: value.toSNBT(format, iteration), self.getPayload())) + ']'
 
         return "[I;\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join(map(lambda value: value.toSNBT(format, iteration), self.getPayload())) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "]"
 
-
     def payloadAsBinary(self) -> bytes:
         return pack('>l', len(self.getPayload())) + reduce(lambda acc, bin: acc + bin, map(lambda value: value.payloadAsBinary(), self.getPayload()), b'')
 
-
     def getPayloadSize(self) -> int:
         return 4 + 4 * len(self.getPayload())
-
 
     def get(self, index: int) -> NBTTagInt:
         payload = self.getPayload()
@@ -50,7 +46,6 @@ class NBTTagIntArray(NBTNamedTag):
             raise IndexError('Index out of bounds')
 
         return payload[index]
-
 
     def set(self, index: int, value: NBTTagInt) -> None:
         payload = self.getPayload()

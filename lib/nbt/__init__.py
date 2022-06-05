@@ -14,20 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from struct import pack
-
-from lib.nbt import NBTNamedTag, NBTTagType
-
-
-class NBTTagShort(NBTNamedTag):
-    _type: NBTTagType = NBTTagType.TAG_Short
-
-    def getPayload(self) -> int:
-        return super().getPayload()
-
-    def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
-        return f"{self.getPayload()}s"
-
-    def payloadAsBinary(self) -> bytes:
-        return pack('>h', self.getPayload())
+from .NBTTag import NBTTag
+from .NBTTagType import NBTTagType
+from .NBTNamedTag import NBTNamedTag
+from .NBTUtils import NBTUtils
+from .NBTParser import NBTParser

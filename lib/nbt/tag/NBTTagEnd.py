@@ -16,21 +16,18 @@
 
 
 from struct import pack
-from lib.nbt.NBTTag import NBTTag
-from lib.nbt.NBTTagType import NBTTagType
+
+from lib.nbt import NBTTag, NBTTagType
 
 
 class NBTTagEnd(NBTTag):
     _type: NBTTagType = NBTTagType.TAG_End
 
-
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         return ''
 
-
     def toBinary(self) -> bytes:
         return pack('>B', self._type.value)
-
 
     def getByteLength(self) -> int:
         return 1

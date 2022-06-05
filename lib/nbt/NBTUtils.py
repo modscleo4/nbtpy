@@ -17,23 +17,20 @@
 
 import re
 
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.tag.NBTTagByteArray import NBTTagByteArray
-from lib.nbt.tag.NBTTagCompound import NBTTagCompound
-from lib.nbt.tag.NBTTagIntArray import NBTTagIntArray
-from lib.nbt.tag.NBTTagList import NBTTagList
-from lib.nbt.tag.NBTTagLongArray import NBTTagLongArray
+from lib.nbt import NBTNamedTag
+from lib.nbt.tag import NBTTagByteArray, NBTTagCompound, NBTTagIntArray, NBTTagList, NBTTagLongArray
 from lib.settings import settings
+
 
 class NBTUtils:
     @staticmethod
-    def getWalking(tag: NBTTagCompound|NBTTagList|NBTTagByteArray|NBTTagIntArray|NBTTagLongArray, key: str) -> NBTNamedTag:
+    def getWalking(tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray, key: str) -> NBTNamedTag:
         if isinstance(key, str):
             parts = list(filter(None, re.split(r'(\[[^\]]*\])|("[^"]*")|\.+', key)))
         else:
             parts = key
 
-        current  = tag
+        current = tag
 
         for part in parts:
             part = part.strip('"')
@@ -60,7 +57,7 @@ class NBTUtils:
         return current
 
     @staticmethod
-    def setWalking(tag: NBTTagCompound|NBTTagList|NBTTagByteArray|NBTTagIntArray|NBTTagLongArray, key: str|list[str], value: NBTNamedTag) -> NBTNamedTag:
+    def setWalking(tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray, key: str | list[str], value: NBTNamedTag) -> NBTNamedTag:
         if isinstance(key, str):
             parts = list(filter(None, re.split(r'(\[[^\]]*\])|("[^"]*")|\.+', key)))
         else:

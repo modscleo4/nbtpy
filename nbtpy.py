@@ -20,30 +20,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from os.path import exists
-import re
 import dearpygui.dearpygui as imgui
-from os import path, unlink
 import sys
 import gzip
 
-from lib.nbt.NBTNamedTag import NBTNamedTag
-from lib.nbt.NBTParser import NBTParser
-from lib.nbt.NBTUtils import NBTUtils
-from lib.nbt.tag.NBTTagByte import NBTTagByte
-from lib.nbt.tag.NBTTagByteArray import NBTTagByteArray
-from lib.nbt.tag.NBTTagCompound import NBTTagCompound
-from lib.nbt.tag.NBTTagDouble import NBTTagDouble
-from lib.nbt.tag.NBTTagFloat import NBTTagFloat
-from lib.nbt.tag.NBTTagInt import NBTTagInt
-from lib.nbt.tag.NBTTagIntArray import NBTTagIntArray
-from lib.nbt.tag.NBTTagList import NBTTagList
-from lib.nbt.tag.NBTTagLong import NBTTagLong
-from lib.nbt.tag.NBTTagLongArray import NBTTagLongArray
-from lib.nbt.tag.NBTTagShort import NBTTagShort
-from lib.nbt.tag.NBTTagString import NBTTagString
+from lib.nbt import NBTNamedTag, NBTParser, NBTUtils
+from lib.nbt.tag import NBTTagByte, NBTTagByteArray, NBTTagCompound, NBTTagDouble, NBTTagFloat, NBTTagInt, NBTTagIntArray, NBTTagList, NBTTagLong, NBTTagLongArray, NBTTagShort, NBTTagString
 
 from lib.util import NBTException, __version__
 from lib.settings import settings
+
 
 class OpenFile:
     def __init__(self, filename: str, nbt: NBTTagCompound, snbt: bool):
@@ -52,13 +38,16 @@ class OpenFile:
         self.tags = {}
         self.snbt = snbt
 
+
 open_files: dict[str, OpenFile] = {}
 current_file: str = ''
 can_save: bool = False
 
+
 def handle_tab_change(sender: str, tab: str):
     global current_file
     current_file = tab
+
 
 def parse_file(filename_full: str, filename: str, snbt: bool):
     global open_files
@@ -209,7 +198,7 @@ def exit():
     sys.exit(0)
 
 
-def main() -> int:
+def main():
     global can_save
 
     imgui.create_context()

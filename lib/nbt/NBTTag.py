@@ -15,9 +15,10 @@
 # limitations under the License.
 
 
-from lib.settings import settings
 from abc import abstractmethod
-from lib.nbt.NBTTagType import NBTTagType
+
+from lib.settings import settings
+from lib.nbt import NBTTagType
 
 
 class NBTTag:

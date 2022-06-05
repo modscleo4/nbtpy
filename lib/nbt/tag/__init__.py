@@ -14,20 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .NBTTagByte import NBTTagByte
+from .NBTTagDouble import NBTTagDouble
+from .NBTTagEnd import NBTTagEnd
+from .NBTTagFloat import NBTTagFloat
+from .NBTTagInt import NBTTagInt
+from .NBTTagLong import NBTTagLong
+from .NBTTagShort import NBTTagShort
+from .NBTTagString import NBTTagString
 
-from struct import pack
+from .NBTTagByteArray import NBTTagByteArray
+from .NBTTagIntArray import NBTTagIntArray
+from .NBTTagLongArray import NBTTagLongArray
+from .NBTTagList import NBTTagList
 
-from lib.nbt import NBTNamedTag, NBTTagType
-
-
-class NBTTagShort(NBTNamedTag):
-    _type: NBTTagType = NBTTagType.TAG_Short
-
-    def getPayload(self) -> int:
-        return super().getPayload()
-
-    def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
-        return f"{self.getPayload()}s"
-
-    def payloadAsBinary(self) -> bytes:
-        return pack('>h', self.getPayload())
+from .NBTTagCompound import NBTTagCompound
