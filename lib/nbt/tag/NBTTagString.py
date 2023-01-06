@@ -30,7 +30,7 @@ class NBTTagString(NBTNamedTag):
         return '"' + self.getPayload().replace('"', '\\"') + '"'
 
     def payloadAsBinary(self) -> bytes:
-        return pack('>n', len(self.getPayload())) + bytes(self.getPayload(), 'utf-8')
+        return pack('>H', len(self.getPayload().encode('utf-8'))) + bytes(self.getPayload(), 'utf-8')
 
     def getPayloadSize(self) -> int:
-        return 2 + len(super().getPayload())
+        return 2 + len(self.getPayload().encode('utf-8'))

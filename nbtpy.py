@@ -93,7 +93,7 @@ def write_file(filename_full: str, nbt: NBTTagCompound, snbt: bool):
             file.write(nbt.toSNBT())
     else:
         with open(filename_full, 'wb') as file:
-            file.write(gzip.compress(nbt.toBytes(), 7))
+            file.write(gzip.compress(nbt.toBinary(), 7))
 
 
 def handle_save_file_as(sender: str, app_data, user_data):
@@ -101,8 +101,12 @@ def handle_save_file_as(sender: str, app_data, user_data):
     file_name = app_data['file_name']
 
     if sender == 'save_file_dat':
+        if not file_name_full.endswith('.dat'):
+            file_name_full += '.dat'
         write_file(file_name_full, open_files[current_file].nbt, False)
     elif sender == 'save_file_snbt':
+        if not file_name_full.endswith('.snbt'):
+            file_name_full += '.snbt'
         write_file(file_name_full, open_files[current_file].nbt, True)
 
 
@@ -147,7 +151,7 @@ def parse_tag(name: str, full_name: list[str], tag: NBTNamedTag):
         elif isinstance(tag, NBTTagDouble):
             tag_id = imgui.add_input_double(label=name, default_value=tag.getPayload(), width=250, callback=input_callback)
         elif isinstance(tag, NBTTagString):
-            tag_id = imgui.add_input_text(label=name, default_value=tag.getPayload(), width=250, callback=input_callback)
+            tag_id = imgui.add_input_text(label=name, default_value=tag.getPayload(), width=250, multiline=tag.getPayloadSize() > 100, callback=input_callback)
         else:
             raise NBTException(f"Unknown tag type: {tag.__class__.__name__}")
 

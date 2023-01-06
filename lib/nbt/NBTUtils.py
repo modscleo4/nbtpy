@@ -24,7 +24,10 @@ from lib.settings import settings
 
 class NBTUtils:
     @staticmethod
-    def getWalking(tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray, key: str) -> NBTNamedTag:
+    def getWalking(
+        tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray,
+        key: str
+    ) -> NBTNamedTag:
         if isinstance(key, str):
             parts = list(filter(None, re.split(r'(\[[^\]]*\])|("[^"]*")|\.+', key)))
         else:
@@ -57,7 +60,11 @@ class NBTUtils:
         return current
 
     @staticmethod
-    def setWalking(tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray, key: str | list[str], value: NBTNamedTag) -> NBTNamedTag:
+    def setWalking(
+        tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray,
+        key: str | list[str],
+        value: NBTNamedTag
+    ) -> NBTNamedTag:
         if isinstance(key, str):
             parts = list(filter(None, re.split(r'(\[[^\]]*\])|("[^"]*")|\.+', key)))
         else:

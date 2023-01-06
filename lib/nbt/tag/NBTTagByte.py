@@ -29,5 +29,5 @@ class NBTTagByte(NBTNamedTag):
     def toSNBT(self, format=True, iteration=1):
         return f"{self.getPayload()}b"
 
-    def toBinary(self) -> bytes:
+    def payloadAsBinary(self) -> bytes:
         return pack('>b', self.getPayload())

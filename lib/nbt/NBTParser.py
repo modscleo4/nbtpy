@@ -279,7 +279,7 @@ class NBTParser:
                     while (data[j] != '"' or data[j - 1] == "\\"):
                         j += 1
 
-                    return NBTTagString(name, data[i + 1:j - 1], {'byteLength': j - 1 + 2})
+                    return NBTTagString(name, data[i + 1:j], {'byteLength': j - 1 + 2})
 
                 case "'":
                     j = i + 1

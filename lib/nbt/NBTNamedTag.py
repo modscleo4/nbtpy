@@ -57,4 +57,4 @@ class NBTNamedTag(NBTTag):
         pass
 
     def toBinary(self) -> bytes:
-        return pack('>C', self.getType().value) + pack('>n', len(self.getName() or "")) + bytes(self.getName(), 'utf-8') + self.payloadAsBinary()
+        return pack('>B', self.getType().value) + pack('>H', len(self.getName().encode('utf-8') or "")) + bytes(self.getName(), 'utf-8') + self.payloadAsBinary()
