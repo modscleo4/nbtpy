@@ -16,6 +16,7 @@
 
 
 from struct import pack
+from re import sub
 
 from lib.nbt import NBTNamedTag, NBTTagType
 
@@ -27,7 +28,7 @@ class NBTTagString(NBTNamedTag):
         return super().getPayload()
 
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
-        return '"' + self.getPayload().replace('"', '\\"') + '"'
+        return '"' + sub(r'([^\\])\"', r'\1\\"', self.getPayload()) + '"'
 
     def payloadAsBinary(self) -> bytes:
         return pack('>H', len(self.getPayload().encode('utf-8'))) + bytes(self.getPayload(), 'utf-8')

@@ -43,14 +43,30 @@ class NBTTagByteArray(NBTNamedTag):
     def get(self, index: int) -> NBTTagByte:
         payload = self.getPayload()
         if (index < 0 or index >= len(payload)):
-            raise IndexError('Index out of bounds')
+            raise IndexError(f'Index out of bounds: {index}')
 
         return payload[index]
 
     def set(self, index: int, value: NBTTagByte) -> None:
         payload = self.getPayload()
         if (index < 0 or index >= len(payload)):
-            raise IndexError('Index out of bounds')
+            raise IndexError(f'Index out of bounds: {index}')
 
         payload[index] = value
         self.setPayload(payload)
+
+    def add(self, value: NBTTagByte) -> None:
+        payload = self.getPayload()
+        payload.append(value)
+        self.setPayload(payload)
+
+    def remove(self, index: int) -> None:
+        payload = self.getPayload()
+        if (index < 0 or index >= len(payload)):
+            raise IndexError(f'Index out of bounds: {index}')
+
+        payload.pop(index)
+        self.setPayload(payload)
+
+    def __len__(self) -> int:
+        return len(self.getPayload())

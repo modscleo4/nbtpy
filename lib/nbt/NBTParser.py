@@ -21,6 +21,7 @@ from struct import unpack
 from lib.nbt import NBTNamedTag, NBTTag, NBTTagType
 from lib.nbt.tag import NBTTagByte, NBTTagByteArray, NBTTagCompound, NBTTagDouble, NBTTagEnd, NBTTagFloat, NBTTagInt, NBTTagIntArray, NBTTagList, NBTTagLong, NBTTagLongArray, NBTTagShort, NBTTagString
 from lib.settings import settings
+from lib.util import NBTException
 
 
 class NBTParser:
@@ -125,12 +126,13 @@ class NBTParser:
 
             # Fully formed tags, followed by a TAG_End.
             case NBTTagType.TAG_Compound:
-                payload = {}
+                payload = []
 
                 i = 0
-                while (tag := NBTParser.parse(data[i:], iteration + 1)).getType() != NBTTagType.TAG_End:
-                    payload[tag.getName()] = tag
-                    i += tag.getByteLength()
+                while (_tag := NBTParser.parse(data[i:], iteration + 1)).getType() != NBTTagType.TAG_End:
+                    #payload[_tag.getName()] = _tag
+                    payload.append(_tag)
+                    i += _tag.getByteLength()
 
                 return NBTTagCompound(name, payload)
 
@@ -154,6 +156,9 @@ class NBTParser:
 
                 return NBTTagLongArray(name, payload)
 
+            case NBTTagType.TAG_End:
+                raise NBTException("TAG_End is not a valid tag type.")
+
     @staticmethod
     def parseSNBT(snbtStr: str) -> NBTTag:
         snbtStr = snbtStr.strip()
@@ -161,7 +166,7 @@ class NBTParser:
         return NBTParser.parseSNBTTag(snbtStr)
 
     @staticmethod
-    def parseSNBTTag(data: str, name: str = '', iteration: int = 0, forceType: NBTTagType = None) -> NBTNamedTag:
+    def parseSNBTTag(data: str, name: str = '', iteration: int = 0, forceType: NBTTagType | None = None) -> NBTNamedTag:
         '''
         Since this is parsing a SNBT, we can assume that no tag will be TAG_End.
 
@@ -235,7 +240,7 @@ class NBTParser:
                     return NBTTagList(name, payload, {'listType': payload[0].getType() if len(payload) > 0 else NBTTagType.TAG_End, 'byteLength': k - i + 2})
 
                 case '{':
-                    payload = {}
+                    payload = []
 
                     j = i + 1
                     while (data[j] != '}'):
@@ -270,7 +275,8 @@ class NBTParser:
                         tag = NBTParser.parseSNBTTag(data[j:], tagName, iteration + 1)
                         j += tag.getAdditionalMetadata()['byteLength']
 
-                        payload[tag.getName()] = tag
+                        #payload[tag.getName()] = tag
+                        payload.append(tag)
 
                     return NBTTagCompound(name, payload, {'byteLength': j - i + 2})
 
@@ -314,7 +320,7 @@ class NBTParser:
                             case 'd' | 'D':
                                 return NBTTagDouble(name, float(num), {'byteLength': k - j + 1})
 
-                    if forceType == NBTTagType.TAG_Int or forceType == None and re.match(r"[-+]?\d+$", num) is not None:
+                    if forceType == NBTTagType.TAG_Int or forceType is None and re.match(r"[-+]?\d+$", num) is not None:
                         return NBTTagInt(name, int(num), {'byteLength': k - j})
 
                     return NBTTagDouble(name, float(num), {'byteLength': k - j})

@@ -26,16 +26,11 @@ class NBTUtils:
     @staticmethod
     def getWalking(
         tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray,
-        key: str
+        key: list[str]
     ) -> NBTNamedTag:
-        if isinstance(key, str):
-            parts = list(filter(None, re.split(r'(\[[^\]]*\])|("[^"]*")|\.+', key)))
-        else:
-            parts = key
-
         current = tag
 
-        for part in parts:
+        for part in key:
             part = part.strip('"')
 
             if settings.debug:
@@ -62,20 +57,14 @@ class NBTUtils:
     @staticmethod
     def setWalking(
         tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray,
-        key: str | list[str],
+        key: list[str],
         value: NBTNamedTag
-    ) -> NBTNamedTag:
-        if isinstance(key, str):
-            parts = list(filter(None, re.split(r'(\[[^\]]*\])|("[^"]*")|\.+', key)))
-        else:
-            parts = key
-
-        last = parts[-1].strip('"')
-        parts = parts[:-1]
+    ) -> None:
+        last = key[-1].strip('"')
 
         current = tag
 
-        for part in parts:
+        for part in key[:-1]:
             part = part.strip('"')
 
             if settings.debug:
@@ -98,9 +87,6 @@ class NBTUtils:
                 current = current.get(part)
 
         if re.match(r'^\[(\d+)\]$', last):
-            if not part[1:-1].isdigit():
-                raise ValueError(f"Invalid index: '{part}'")
-
             index = int(last[1:-1])
 
             if not isinstance(current, NBTTagList) and not isinstance(current, NBTTagByteArray) and not isinstance(current, NBTTagIntArray) and not isinstance(current, NBTTagLongArray):
@@ -112,3 +98,47 @@ class NBTUtils:
                 raise ValueError(f"Cannot access key '{last}' on non-compound tag")
 
             current = current.set(last, value)
+
+    @staticmethod
+    def removeWalking(
+        tag: NBTTagCompound | NBTTagList | NBTTagByteArray | NBTTagIntArray | NBTTagLongArray,
+        key: str | list[str]
+    ) -> None:
+        last = key[-1].strip('"')
+
+        current = tag
+
+        for part in key[:-1]:
+            part = part.strip('"')
+
+            if settings.debug:
+                print(f"Part: {part}")
+
+            if re.match(r'^\[(\d+)\]$', part):
+                if not part[1:-1].isdigit():
+                    raise ValueError(f"Invalid index: '{part}'")
+
+                index = int(part[1:-1])
+
+                if not isinstance(current, NBTTagList) and not isinstance(current, NBTTagByteArray) and not isinstance(current, NBTTagIntArray) and not isinstance(current, NBTTagLongArray):
+                    raise ValueError(f"Cannot access index '{index}' on non-list tag")
+
+                current = current.get(index)
+            else:
+                if not isinstance(current, NBTTagCompound):
+                    raise ValueError(f"Cannot access key '{part}' on non-compound tag")
+
+                current = current.get(part)
+
+        if re.match(r'^\[(\d+)\]$', last):
+            index = int(last[1:-1])
+
+            if not isinstance(current, NBTTagList) and not isinstance(current, NBTTagByteArray) and not isinstance(current, NBTTagIntArray) and not isinstance(current, NBTTagLongArray):
+                raise ValueError(f"Cannot access index '{index}' on non-list tag")
+
+            current = current.remove(index)
+        else:
+            if not isinstance(current, NBTTagCompound):
+                raise ValueError(f"Cannot access key '{last}' on non-compound tag")
+
+            current = current.remove(last)

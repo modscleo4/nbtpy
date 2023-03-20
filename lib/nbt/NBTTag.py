@@ -27,6 +27,9 @@ class NBTTag:
     def getType(self) -> NBTTagType:
         return self._type
 
+    def getTypeName(self) -> str:
+        return self._type.name
+
     @abstractmethod
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         pass

@@ -25,6 +25,9 @@ from lib.nbt import NBTTagType
 class NBTTagList(NBTNamedTag):
     _type: NBTTagType = NBTTagType.TAG_List
 
+    def getListType(self) -> NBTTagType:
+        return self.getAdditionalMetadata()['listType']
+
     def getPayload(self) -> list[NBTNamedTag]:
         return super().getPayload()
 
@@ -37,9 +40,7 @@ class NBTTagList(NBTNamedTag):
         return "[\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join(content) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "]"
 
     def payloadAsBinary(self) -> bytes:
-        listType = self.getAdditionalMetadata()['listType']
-
-        return pack('>B', listType.value) + pack('>l', len(self.getPayload())) + reduce(lambda acc, bin: acc + bin, map(lambda value: value.payloadAsBinary(), self.getPayload()), b'')
+        return pack('>B', self.getListType().value) + pack('>l', len(self.getPayload())) + reduce(lambda acc, bin: acc + bin, map(lambda value: value.payloadAsBinary(), self.getPayload()), b'')
 
     def getPayloadSize(self) -> int:
 
@@ -51,14 +52,35 @@ class NBTTagList(NBTNamedTag):
     def get(self, index: int) -> NBTNamedTag:
         payload = self.getPayload()
         if (index < 0 or index >= len(payload)):
-            raise IndexError('Index out of bounds')
+            raise IndexError(f'Index out of bounds: {index}')
 
         return payload[index]
 
     def set(self, index: int, value: NBTNamedTag) -> None:
         payload = self.getPayload()
         if (index < 0 or index >= len(payload)):
-            raise IndexError('Index out of bounds')
+            raise IndexError(f'Index out of bounds: {index}')
+        elif (self.getListType() != value.getType()):
+            raise TypeError('The list type is ' + self.getListType().name + ' but the value type is ' + value.getType().name)
 
         payload[index] = value
         self.setPayload(payload)
+
+    def add(self, value: NBTNamedTag) -> None:
+        if (self.getListType() != value.getType()):
+            raise TypeError('The list type is ' + self.getListType().name + ' but the value type is ' + value.getType().name)
+
+        payload = self.getPayload()
+        payload.append(value)
+        self.setPayload(payload)
+
+    def remove(self, index: int) -> None:
+        payload = self.getPayload()
+        if (index < 0 or index >= len(payload)):
+            raise IndexError(f'Index out of bounds: {index}')
+
+        del payload[index]
+        self.setPayload(payload)
+
+    def __len__(self) -> int:
+        return len(self.getPayload())
