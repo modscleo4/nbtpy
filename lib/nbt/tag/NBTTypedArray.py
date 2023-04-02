@@ -16,59 +16,47 @@
 
 
 from struct import pack
+from typing import TypeVar, Generic
 
 from lib.nbt import NBTNamedTag
-from lib.nbt import NBTTagType
 
 
-class NBTTagList(NBTNamedTag[list[NBTNamedTag]]):
-    _type: NBTTagType = NBTTagType.TAG_List
-    _listType: NBTTagType = NBTTagType.TAG_End
+T = TypeVar('T', bound=NBTNamedTag)
 
-    def __init__(self, name: str, payload: list[NBTNamedTag] = [], listType: NBTTagType = NBTTagType.TAG_End, additionalMetadata: dict = {}):
-        super().__init__(name, list(payload), additionalMetadata)
-        self._listType = listType
 
-    def getListType(self) -> NBTTagType:
-        return self._listType
+class NBTTypedArray(NBTNamedTag[list[T]], Generic[T]):
+    _prefix: str = ''
 
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         payload = self.getPayload()
-        content = [tag.toSNBT(format, iteration + 1) for tag in payload]
 
         if not format:
-            return '[' + ','.join(content) + ']'
+            return f'[{self._prefix};' + ','.join([value.toSNBT(format, iteration) for value in payload]) + ']'
 
-        return "[\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join(content) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "]"
+        return f"[{self._prefix};\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join([value.toSNBT(format, iteration) for value in payload]) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "]"
 
     def payloadAsBinary(self) -> bytes:
         payload = self.getPayload()
-        return pack('>B', self.getListType().value) + pack('>l', len(payload)) + b''.join([value.payloadAsBinary() for value in payload])
+        return pack('>l', len(payload)) + b''.join([value.payloadAsBinary() for value in payload])
 
     def getPayloadSize(self) -> int:
-        payload = self.getPayload()
-        return 1 + 4 + sum([item.getPayloadSize() for item in payload])
+        return 4 + sum([value.getPayloadSize() for value in self.getPayload()])
 
-    def get(self, index: int) -> NBTNamedTag:
+    def get(self, index: int) -> T:
         payload = self.getPayload()
         if (index < 0 or index >= len(payload)):
             raise IndexError(f'Index out of bounds: {index}')
 
         return payload[index]
 
-    def set(self, index: int, value: NBTNamedTag) -> None:
+    def set(self, index: int, value: T) -> None:
         payload = self.getPayload()
         if (index < 0 or index >= len(payload)):
             raise IndexError(f'Index out of bounds: {index}')
-        elif (self.getListType() != value.getType()):
-            raise TypeError('The list type is ' + self.getListType().name + ' but the value type is ' + value.getType().name)
 
         payload[index] = value
 
-    def add(self, value: NBTNamedTag) -> None:
-        if (self.getListType() != value.getType()):
-            raise TypeError('The list type is ' + self.getListType().name + ' but the value type is ' + value.getType().name)
-
+    def add(self, value: T) -> None:
         payload = self.getPayload()
         payload.append(value)
 
@@ -77,21 +65,21 @@ class NBTTagList(NBTNamedTag[list[NBTNamedTag]]):
         if (index < 0 or index >= len(payload)):
             raise IndexError(f'Index out of bounds: {index}')
 
-        del payload[index]
+        payload.pop(index)
 
     def __len__(self) -> int:
         return len(self.getPayload())
 
-    def __getitem__(self, index: int) -> NBTNamedTag:
+    def __getitem__(self, index: int) -> T:
         return self.get(index)
 
-    def __setitem__(self, index: int, value: NBTNamedTag) -> None:
+    def __setitem__(self, index: int, value: T) -> None:
         self.set(index, value)
 
     def __delitem__(self, index: int) -> None:
         self.remove(index)
 
-    def __iadd__(self, value: NBTNamedTag):
+    def __iadd__(self, value: T):
         self.add(value)
         return self
 
@@ -101,5 +89,5 @@ class NBTTagList(NBTNamedTag[list[NBTNamedTag]]):
     def __reversed__(self):
         return reversed(self.getPayload())
 
-    def __contains__(self, value: NBTNamedTag) -> bool:
+    def __contains__(self, value: T) -> bool:
         return value in self.getPayload()

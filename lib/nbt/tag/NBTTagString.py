@@ -21,11 +21,8 @@ from re import sub
 from lib.nbt import NBTNamedTag, NBTTagType
 
 
-class NBTTagString(NBTNamedTag):
+class NBTTagString(NBTNamedTag[str]):
     _type: NBTTagType = NBTTagType.TAG_String
-
-    def getPayload(self) -> str:
-        return super().getPayload()
 
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         return '"' + sub(r'([^\\])\"', r'\1\\"', self.getPayload()) + '"'

@@ -41,5 +41,8 @@ class NBTTag:
     def __str__(self):
         return self.toSNBT(settings.format)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.toSNBT(False)})"
+
     def getByteLength(self) -> int:
         return self._type.size()

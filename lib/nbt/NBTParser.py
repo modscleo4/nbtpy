@@ -18,10 +18,9 @@
 import re
 from struct import unpack
 
-from lib.nbt import NBTNamedTag, NBTTag, NBTTagType
+from lib.nbt import NBTNamedTag, NBTTag, NBTTagType, NBTException
 from lib.nbt.tag import NBTTagByte, NBTTagByteArray, NBTTagCompound, NBTTagDouble, NBTTagEnd, NBTTagFloat, NBTTagInt, NBTTagIntArray, NBTTagList, NBTTagLong, NBTTagLongArray, NBTTagShort, NBTTagString
 from lib.settings import settings
-from lib.util import NBTException
 
 
 class NBTParser:
@@ -122,7 +121,7 @@ class NBTParser:
 
                     j += _tag.getByteLength() - 1 - 2
 
-                return NBTTagList(name, payload, {'listType': subtag})
+                return NBTTagList(name, payload, subtag)
 
             # Fully formed tags, followed by a TAG_End.
             case NBTTagType.TAG_Compound:
@@ -130,7 +129,6 @@ class NBTParser:
 
                 i = 0
                 while (_tag := NBTParser.parse(data[i:], iteration + 1)).getType() != NBTTagType.TAG_End:
-                    #payload[_tag.getName()] = _tag
                     payload.append(_tag)
                     i += _tag.getByteLength()
 
@@ -237,7 +235,7 @@ class NBTParser:
                             return NBTTagLongArray(name, payload, {'byteLength': k - i + 4})
 
                     # Minecraft uses TAG_End for empty lists.
-                    return NBTTagList(name, payload, {'listType': payload[0].getType() if len(payload) > 0 else NBTTagType.TAG_End, 'byteLength': k - i + 2})
+                    return NBTTagList(name, payload, payload[0].getType() if len(payload) > 0 else NBTTagType.TAG_End, {'byteLength': k - i + 2})
 
                 case '{':
                     payload = []

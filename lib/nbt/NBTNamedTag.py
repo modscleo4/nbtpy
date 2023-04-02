@@ -17,19 +17,19 @@
 
 from abc import abstractmethod
 from struct import pack
+from typing import TypeVar, Generic
 
 from lib.nbt import NBTTag
 
 
-class NBTNamedTag(NBTTag):
-    _name: str = ''
-    _payload: object = None
-    _additionalMetadata: dict = {}
+T = TypeVar('T')
 
-    def __init__(self, name: str = '', payload: object = None, additionalMetadata: dict = {}):
+
+class NBTNamedTag(NBTTag, Generic[T]):
+    def __init__(self, name: str = '', payload: T = None, additionalMetadata: dict = {}):
         self._name = name
         self._payload = payload
-        self._additionalMetadata = additionalMetadata
+        self._additionalMetadata = dict(additionalMetadata)
 
     def getName(self) -> str:
         return self._name
@@ -37,10 +37,10 @@ class NBTNamedTag(NBTTag):
     def setName(self, name: str):
         self._name = name
 
-    def getPayload(self) -> object:
+    def getPayload(self) -> T:
         return self._payload
 
-    def setPayload(self, payload: object):
+    def setPayload(self, payload: T):
         self._payload = payload
 
     def getAdditionalMetadata(self) -> dict:
@@ -57,4 +57,5 @@ class NBTNamedTag(NBTTag):
         pass
 
     def toBinary(self) -> bytes:
-        return pack('>B', self.getType().value) + pack('>H', len(self.getName().encode('utf-8') or "")) + bytes(self.getName(), 'utf-8') + self.payloadAsBinary()
+        nameEncoded = self.getName().encode('utf-8') or b''
+        return pack('>B', self.getType().value) + pack('>H', len(nameEncoded)) + nameEncoded + self.payloadAsBinary()

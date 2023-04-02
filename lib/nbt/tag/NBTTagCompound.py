@@ -16,23 +16,18 @@
 
 
 from argparse import ArgumentError
-from functools import reduce
 import re
 
-from lib.nbt import NBTNamedTag, NBTTagType
+from lib.nbt import NBTNamedTag, NBTTagType, NBTException
 from lib.nbt.tag import NBTTagEnd
-from lib.util import NBTException
 
 
-class NBTTagCompound(NBTNamedTag):
+class NBTTagCompound(NBTNamedTag[list[NBTNamedTag]]):
     _type: NBTTagType = NBTTagType.TAG_Compound
-
-    def getPayload(self) -> list[NBTNamedTag]:
-        return super().getPayload()
 
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         payload = self.getPayload()
-        content = map(lambda tag: ('"' + tag.getName() + '"' if re.search(r'[ :]', tag.getName()) else tag.getName()) + ':' + (' ' if format else '') + tag.toSNBT(format, iteration + 1), payload)
+        content = [f'"{tag.getName()}"' if re.search(r'[ :]', tag.getName()) else tag.getName() + ':' + (' ' if format else '') + tag.toSNBT(format, iteration + 1) for tag in payload]
 
         if not format:
             return '{' + ','.join(content) + '}'
@@ -41,11 +36,11 @@ class NBTTagCompound(NBTNamedTag):
 
     def payloadAsBinary(self) -> bytes:
         payload = self.getPayload()
-        return reduce(lambda acc, tagBytes: acc + tagBytes, map(lambda tag: tag.toBinary(), payload), b'') + NBTTagEnd().toBinary()
+        return b''.join([tag.toBinary() for tag in payload]) + NBTTagEnd().toBinary()
 
     def getPayloadSize(self) -> int:
         payload = self.getPayload()
-        return reduce(lambda carry, tag: carry + tag.getByteLength(), payload, NBTTagEnd().getByteLength())
+        return sum([tag.getByteLength() for tag in payload]) + NBTTagEnd().getByteLength()
 
     def keys(self) -> list[dict[str, str]]:
         payload = self.getPayload()
@@ -115,3 +110,28 @@ class NBTTagCompound(NBTNamedTag):
                 return
 
         raise NBTException(f"Tag not found: {name}")
+
+    def clear(self):
+        self.setPayload([])
+
+    def __len__(self) -> int:
+        return len(self.getPayload())
+
+    def __getitem__(self, name: str) -> NBTNamedTag:
+        return self.get(name)
+
+    def __setitem__(self, name: str, value: NBTNamedTag):
+        self.set(name, value)
+
+    def __delitem__(self, name: str):
+        self.remove(name)
+
+    def __iadd__(self, value: NBTNamedTag):
+        self.add(value)
+        return self
+
+    def __iter__(self):
+        return iter(self.getPayload())
+
+    def __contains__(self, name: str) -> bool:
+        return self.has(name)

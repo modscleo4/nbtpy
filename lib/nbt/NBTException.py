@@ -1,6 +1,6 @@
 # A Python 3 NBT (Named Binary Tag) Parser
 #
-# Copyright 2022 Dhiego Cassiano Fogaça Barbosa <modscleo4@outlook.com>
+# Copyright 2021 Dhiego Cassiano Fogaça Barbosa <modscleo4@outlook.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,5 @@
 # limitations under the License.
 
 
-from lib.nbt import NBTTagType
-from lib.nbt.tag import NBTTypedArray, NBTTagLong
-
-
-class NBTTagLongArray(NBTTypedArray[NBTTagLong]):
-    _type: NBTTagType = NBTTagType.TAG_Long_Array
-    _prefix: str = 'L'
+class NBTException(Exception):
+    pass

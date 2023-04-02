@@ -20,11 +20,8 @@ from struct import pack
 from lib.nbt import NBTNamedTag, NBTTagType
 
 
-class NBTTagShort(NBTNamedTag):
+class NBTTagShort(NBTNamedTag[int]):
     _type: NBTTagType = NBTTagType.TAG_Short
-
-    def getPayload(self) -> int:
-        return super().getPayload()
 
     def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
         return f"{self.getPayload()}s"

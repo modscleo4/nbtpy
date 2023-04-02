@@ -21,10 +21,6 @@ import sys
 __version__ = '0.0.1'
 
 
-class NBTException(Exception):
-    pass
-
-
 class COLORS:
     reset: int = 0
     bold: int = 1

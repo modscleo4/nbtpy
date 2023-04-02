@@ -23,6 +23,7 @@ from .NBTTagLong import NBTTagLong
 from .NBTTagShort import NBTTagShort
 from .NBTTagString import NBTTagString
 
+from .NBTTypedArray import NBTTypedArray
 from .NBTTagByteArray import NBTTagByteArray
 from .NBTTagIntArray import NBTTagIntArray
 from .NBTTagLongArray import NBTTagLongArray

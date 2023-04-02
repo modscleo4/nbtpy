@@ -24,10 +24,10 @@ import dearpygui.dearpygui as imgui
 import sys
 import gzip
 
-from lib.nbt import NBTNamedTag, NBTParser, NBTTagType
+from lib.nbt import NBTNamedTag, NBTParser, NBTTagType, NBTException
 from lib.nbt.tag import NBTTagByte, NBTTagByteArray, NBTTagCompound, NBTTagDouble, NBTTagFloat, NBTTagInt, NBTTagIntArray, NBTTagList, NBTTagLong, NBTTagLongArray, NBTTagShort, NBTTagString
 
-from lib.util import NBTException, __version__
+from lib.util import __version__
 from lib.settings import settings
 
 
@@ -151,7 +151,7 @@ def rename_tag(sender: int | str, __, data: tuple[NBTNamedTag, int | str, NBTNam
         if not new_name:
             message_box('Error', 'Tag name cannot be empty.')
             return
-        elif parent_tag.has(new_name):
+        elif new_name in parent_tag:
             message_box('Error', f'A tag with the name "{new_name}" already exists.')
             return
 
@@ -170,10 +170,10 @@ def delete_tag(sender: int | str, __, data: tuple[NBTNamedTag, int | str, NBTNam
         return
 
     if isinstance(parent_tag, NBTTagCompound):
-        parent_tag.remove(tag.getName())
+        del parent_tag[tag.getName()]
     elif isinstance(parent_tag, NBTTagList) or isinstance(parent_tag, NBTTagByteArray) or isinstance(parent_tag, NBTTagIntArray) or isinstance(parent_tag, NBTTagLongArray):
         index = int(tag_name[1:-1])
-        parent_tag.remove(index)
+        del parent_tag[index]
         if parent_id is not None:
             children = imgui.get_item_children(parent_id, slot=1)
             if children:
@@ -188,7 +188,8 @@ def copy_clipboard(sender: int | str, __, data: tuple[NBTNamedTag]):
 
     tag, = data
 
-    print(f'Copying {tag.getName()} to clipboard...')
+    if settings.debug:
+        print(f'Copying {tag.getName()} to clipboard...')
 
     clipboard = tag
 
@@ -209,35 +210,35 @@ def paste_clipboard(sender: int | str, __, data: tuple[NBTNamedTag, int | str]):
             message_box('Error', f'Cannot paste {clipboard.getTypeName()} into byte array.')
             return
 
-        parent_tag.add(clipboard)
+        parent_tag += clipboard
         tag_name = f'[{len(parent_tag) - 1}]'
     elif isinstance(parent_tag, NBTTagIntArray):
         if not isinstance(clipboard, NBTTagInt):
             message_box('Error', f'Cannot paste {clipboard.getTypeName()} into int array.')
             return
 
-        parent_tag.add(clipboard)
+        parent_tag += clipboard
         tag_name = f'[{len(parent_tag) - 1}]'
     elif isinstance(parent_tag, NBTTagLongArray):
         if not isinstance(clipboard, NBTTagLong):
             message_box('Error', f'Cannot paste {clipboard.getTypeName()} into long array.')
             return
 
-        parent_tag.add(clipboard)
+        parent_tag += clipboard
         tag_name = f'[{len(parent_tag) - 1}]'
     elif isinstance(parent_tag, NBTTagList):
         if clipboard.getType() != parent_tag.getListType():
             message_box('Error', f'Cannot paste {clipboard.getTypeName()} into this tag.')
             return
 
-        parent_tag.add(clipboard)
+        parent_tag += clipboard
         tag_name = f'[{len(parent_tag) - 1}]'
     elif isinstance(parent_tag, NBTTagCompound):
-        if parent_tag.has(clipboard.getName()):
+        if clipboard.getName() in parent_tag:
             message_box('Error', f'Cannot paste {clipboard.getName()} into this tag. A tag with that name already exists.')
             return
 
-        parent_tag.add(clipboard)
+        parent_tag += clipboard
 
     parse_tag(tag_name, clipboard, isinstance(parent_tag, NBTTagCompound), parent_tag, container_id)
 
@@ -267,7 +268,7 @@ def add_tag(sender: int | str, __, data: tuple[NBTNamedTag, NBTTagType, int | st
             case NBTTagType.TAG_String:
                 return NBTTagString(tag_name, '')
             case NBTTagType.TAG_List:
-                return NBTTagList(tag_name, [])
+                return NBTTagList(tag_name, [], NBTTagType.TAG_End)
             case NBTTagType.TAG_Compound:
                 return NBTTagCompound(tag_name, [])
             case NBTTagType.TAG_Int_Array:
@@ -279,7 +280,8 @@ def add_tag(sender: int | str, __, data: tuple[NBTNamedTag, NBTTagType, int | st
 
     if isinstance(parent_tag, NBTTagCompound):
         def add_tag(tag: NBTNamedTag):
-            print(f'Adding {tag.getName()} ({tag.getTypeName()}) to {parent_tag.getName()}...')
+            if settings.debug:
+                print(f'Adding {tag.getName()} ({tag.getTypeName()}) to {parent_tag.getName()}...')
             parent_tag.add(tag)
 
             parse_tag(tag.getName(), tag, True, parent_tag, container_id)
@@ -298,7 +300,7 @@ def add_tag(sender: int | str, __, data: tuple[NBTNamedTag, NBTTagType, int | st
                         message_box('Error', 'List type cannot be empty.')
                         return
 
-                    tag = NBTTagList(new_name, [], {'listType': NBTTagType[list_type]})
+                    tag = NBTTagList(new_name, [], NBTTagType[list_type])
                     add_tag(tag)
 
                 combo_box('List Type', 'Select list type:', [t.name for t in NBTTagType if t != NBTTagType.TAG_End], do_list)

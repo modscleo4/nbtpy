@@ -15,58 +15,10 @@
 # limitations under the License.
 
 
-from functools import reduce
-from struct import pack
-
-from lib.nbt import NBTNamedTag, NBTTagType
-from lib.nbt.tag import NBTTagInt
+from lib.nbt import NBTTagType
+from lib.nbt.tag import NBTTypedArray, NBTTagInt
 
 
-class NBTTagIntArray(NBTNamedTag):
+class NBTTagIntArray(NBTTypedArray[NBTTagInt]):
     _type: NBTTagType = NBTTagType.TAG_Int_Array
-
-    def getPayload(self) -> list[NBTTagInt]:
-        return super().getPayload()
-
-    def toSNBT(self, format: bool = True, iteration: int = 1) -> str:
-        if not format:
-            return '[I;' + ','.join(map(lambda value: value.toSNBT(format, iteration), self.getPayload())) + ']'
-
-        return "[I;\n" + ''.rjust(iteration * 2, ' ') + (",\n" + ''.rjust(iteration * 2, ' ')).join(map(lambda value: value.toSNBT(format, iteration), self.getPayload())) + "\n" + ''.rjust((iteration - 1) * 2, ' ') + "]"
-
-    def payloadAsBinary(self) -> bytes:
-        return pack('>l', len(self.getPayload())) + reduce(lambda acc, bin: acc + bin, map(lambda value: value.payloadAsBinary(), self.getPayload()), b'')
-
-    def getPayloadSize(self) -> int:
-        return 4 + 4 * len(self.getPayload())
-
-    def get(self, index: int) -> NBTTagInt:
-        payload = self.getPayload()
-        if (index < 0 or index >= len(payload)):
-            raise IndexError(f'Index out of bounds: {index}')
-
-        return payload[index]
-
-    def set(self, index: int, value: NBTTagInt) -> None:
-        payload = self.getPayload()
-        if (index < 0 or index >= len(payload)):
-            raise IndexError(f'Index out of bounds: {index}')
-
-        payload[index] = value
-        self.setPayload(payload)
-
-    def add(self, value: NBTTagInt) -> None:
-        payload = self.getPayload()
-        payload.append(value)
-        self.setPayload(payload)
-
-    def remove(self, index: int) -> None:
-        payload = self.getPayload()
-        if (index < 0 or index >= len(payload)):
-            raise IndexError(f'Index out of bounds: {index}')
-
-        del payload[index]
-        self.setPayload(payload)
-
-    def __len__(self) -> int:
-        return len(self.getPayload())
+    _prefix: str = 'I'

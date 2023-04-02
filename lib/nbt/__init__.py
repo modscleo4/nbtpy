@@ -19,3 +19,4 @@ from .NBTTagType import NBTTagType
 from .NBTNamedTag import NBTNamedTag
 from .NBTUtils import NBTUtils
 from .NBTParser import NBTParser
+from .NBTException import NBTException
